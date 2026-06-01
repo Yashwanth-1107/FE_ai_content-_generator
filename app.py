@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 
+# ✅ Backend URL (change this for Render/Cloud)
 BACKEND_URL = st.secrets["be_server_url"]
 
 st.set_page_config(
@@ -9,52 +10,30 @@ st.set_page_config(
 )
 
 st.title("🚀 AI Content Generator")
-
 st.write("Generate Blogs, LinkedIn Posts, Captions, Emails and more")
 
-topic = st.text_input(
-    "Enter Topic"
-)
+# Inputs
+topic = st.text_input("Enter Topic")
 
 technology = st.selectbox(
     "Select Technology",
-    [
-        "Python",
-        "React",
-        "MERN",
-        "NodeJS",
-        "FastAPI",
-        "AI",
-        "GenAI"
-    ]
+    ["Python", "React", "MERN", "NodeJS", "FastAPI", "AI", "GenAI"]
 )
 
 content_type = st.selectbox(
     "Content Type",
-    [
-        "LinkedIn Post",
-        "Blog",
-        "Instagram Caption",
-        "Twitter Post",
-        "Email",
-        "YouTube Description"
-    ]
+    ["LinkedIn Post", "Blog", "Instagram Caption",
+     "Twitter Post", "Email", "YouTube Description"]
 )
 
 tone = st.selectbox(
     "Tone",
-    [
-        "Professional",
-        "Technical",
-        "Friendly",
-        "Casual",
-        "Marketing"
-    ]
+    ["Professional", "Technical", "Friendly", "Casual", "Marketing"]
 )
 
 generate = st.button("Generate Content")
 
-
+# ✅ API CALL
 if generate:
 
     if not topic:
@@ -64,10 +43,9 @@ if generate:
     with st.spinner("Generating Content..."):
 
         try:
-            # ✅ FIX: use JSON instead of params
             response = requests.post(
                 f"{BACKEND_URL}/generate",
-                json={
+                json={   # ✅ JSON BODY (matches FastAPI)
                     "topic": topic,
                     "technology": technology,
                     "content_type": content_type,
@@ -78,25 +56,19 @@ if generate:
 
             st.write("Status Code:", response.status_code)
 
-            # Try parsing safely
-            try:
-                data = response.json()
-            except Exception:
-                st.error("Invalid JSON response from backend")
-                st.write(response.text)
-                st.stop()
+            data = response.json()
 
-            # Handle success
+            # success
             if response.status_code == 200 and "content" in data:
                 st.success("Content Generated Successfully")
                 st.subheader("Generated Content")
                 st.write(data["content"])
 
-            # Handle backend error
+            # backend error
             else:
                 st.error("Backend Error")
                 st.write(data)
 
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             st.error("Connection Error")
             st.write(str(e))
